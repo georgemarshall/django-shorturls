@@ -1,0 +1,4 @@
+bpython
+django
+django-picklefield
+docutils
