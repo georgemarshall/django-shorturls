@@ -30,10 +30,10 @@ class ShortURLView(View):
             offset = 0
             format = '!B'
 
-            (sizes,) = struct.unpack_from(format, data, offset)
+            (size,) = struct.unpack_from(format, data, offset)
 
-            type_len = sizes >> 4
-            obj_len = sizes - (type_len << 4)
+            type_len = (size & 0b11110000) >> 4
+            obj_len = (size & 0b00001111)
 
              # Get the content type and object id
             offset += struct.calcsize(format)
