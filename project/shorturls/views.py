@@ -9,6 +9,8 @@ from django.utils.log import getLogger
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import View
 
+from .utils import token_decode
+
 logger = getLogger('django.request')
 
 
@@ -24,32 +26,7 @@ class ShortURLView(View):
 
     def get_obj_ids(self, **kwargs):
         if 'token' in kwargs:
-            data = base64.urlsafe_b64decode(smart_str(kwargs['token']) + '==')
-
-            # Get the sizes of our values
-            offset = 0
-            format = '!B'
-
-            (size,) = struct.unpack_from(format, data, offset)
-
-            type_len = (size & 0b11110000) >> 4
-            obj_len = (size & 0b00001111)
-
-             # Get the content type and object id
-            offset += struct.calcsize(format)
-            format = '!%ds%ds' % (type_len, obj_len)
-
-            type_id, obj_id = struct.unpack_from(format, data, offset)
-
-            # Add pad bytes and unpack ``unsigned long long`` values
-            format = '!QQ'
-
-            type_id, obj_id = struct.unpack(format, '%s%s' % (
-                type_id.rjust(8, '\0'), obj_id.rjust(8, '\0')
-            ))
-
-            return type_id, obj_id
-
+            return token_decode(kwargs['token'])
 
     def get(self, request, *args, **kwargs):
         obj_ids = self.get_obj_ids(**kwargs)
