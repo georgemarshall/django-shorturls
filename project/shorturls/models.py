@@ -1,12 +1,17 @@
-from django.db import models
-from django.contrib.sites.models import Site
-from django.utils.translation import ugettext_lazy as _
+from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.sites.models import Site
+from django.db import models
+from django.utils.translation import ugettext_lazy as _
 from picklefield.fields import PickledObjectField
 
 
 class Hit(models.Model):
+    user = models.ForeignKey(User, verbose_name=_('user'),
+        blank=True, null=True, related_name="%(class)s_comments"
+    )
+
     # Content-object field
     content_type = models.ForeignKey(ContentType,
         verbose_name=_('content type'),
@@ -19,7 +24,7 @@ class Hit(models.Model):
     site = models.ForeignKey(Site)
 
     headers = PickledObjectField(_('headers'), blank=True, null=True)
-    ip_address  = models.IPAddressField(_('IP address'), blank=True, null=True)
+    ip_address = models.GenericIPAddressField(blank=True, null=True)
     date = models.DateTimeField(_('date'), auto_now_add=True)
 
     class Meta:
@@ -27,7 +32,7 @@ class Hit(models.Model):
         verbose_name_plural = _('hits')
 
     def __unicode__(self):
-        return '%d' % self.id
+        return '%s: %s' % (self.content_type, self.object_pk)
 
 
 class URL(models.Model):
